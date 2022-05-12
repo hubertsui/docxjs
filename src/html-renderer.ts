@@ -20,6 +20,11 @@ import { BaseHeaderFooterPart } from './header-footer/parts';
 import { Part } from './common/part';
 import { VmlShape } from './document/vector';
 
+const ns = {
+	svg: "http://www.w3.org/2000/svg",
+	mathML: "http://www.w3.org/1998/Math/MathML"
+}
+
 interface CellPos {
 	col: number;
 	row: number;
@@ -442,6 +447,10 @@ section.${c}>article { margin-bottom: auto; }
 .${c} p { margin: 0pt; min-height: 1em; }
 .${c} span { white-space: pre-wrap; overflow-wrap: break-word; }
 .${c} a { color: inherit; text-decoration: inherit; }
+.${c}-math { display: inline-block; vertical-align: middle; }
+.${c}-mfrac { display: inline-flex; flex-flow: column nowrap; }
+.${c}-mfrac .${c}-mrow { text-align: center; line-height: 1; }
+.${c}-mfrac .${c}-mrow:first-child { border-bottom: 1px solid currentColor; }
 `;
 
 		return createStyleElement(styleText);
@@ -684,6 +693,16 @@ section.${c}>article { margin-bottom: auto; }
 
 			case DomType.VmlShape:
 				return this.renderVmlShape(elem as VmlShape);
+
+			case DomType.MmlMath:
+				return this.renderContainer(elem, "div", { className: `${this.className}-math` });
+
+			case DomType.MmlFraction:
+				return this.renderContainer(elem, "div", { className: `${this.className}-mfrac` });
+
+			case DomType.MmlNumerator:
+			case DomType.MmlDenominator:
+				return this.renderContainer(elem, "div", { className: `${this.className}-mrow` });
 		}
 
 		return null;
@@ -705,8 +724,8 @@ section.${c}>article { margin-bottom: auto; }
 		return result;
 	}
 
-	renderContainer(elem: OpenXmlElement, tagName: keyof HTMLElementTagNameMap) {
-		return this.createElement(tagName, null, this.renderChildren(elem));
+	renderContainer(elem: OpenXmlElement, tagName: keyof HTMLElementTagNameMap, props?: Record<string, any>) {
+		return this.createElement(tagName, props, this.renderChildren(elem));
 	}
 
 	renderParagraph(elem: WmlParagraph) {
@@ -1075,7 +1094,7 @@ function createSvgElement<T extends keyof SVGElementTagNameMap>(
 	props?: Partial<Record<keyof SVGElementTagNameMap[T], any>>,
 	children?: Node[]
 ): SVGElementTagNameMap[T] {
-	return createElementNS("http://www.w3.org/2000/svg", tagName, props, children);
+	return createElementNS(ns.svg, tagName, props, children);
 }
 
 function createElementNS(ns: string, tagName: string, props?: Partial<Record<any, any>>, children?: Node[]): any {

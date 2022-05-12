@@ -25,7 +25,11 @@ export enum DomType {
     ComplexField = "complexField",
     Instruction = "instruction",
 	VmlPicture = "vmlPicture",
-	VmlShape = "vmlShape"
+	VmlShape = "vmlShape",
+	MmlMath = "mmlMath",
+	MmlFraction = "mmlFraction",
+	MmlNumerator = "mmlNumerator",
+	MmlDenominator = "mmlDenominator",
 }
 
 export interface OpenXmlElement {

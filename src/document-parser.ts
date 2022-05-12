@@ -437,10 +437,14 @@ export class DocumentParser {
                     result.children.push(parseBookmarkStart(c, xml));
                     break;               
 
-                    case "bookmarkEnd":
+				case "bookmarkEnd":
                     result.children.push(parseBookmarkEnd(c, xml));
                     break;
 
+				case "oMath":
+					result.children.push(this.parseMath(c));
+					break;
+	
                 case "pPr":
                     this.parseParagraphProperties(c, result);
                     break;
@@ -611,6 +615,36 @@ export class DocumentParser {
 
         return result;
     }
+
+	parseMath(elem: Element): OpenXmlElement {
+		return this.parseMathElement(elem, DomType.MmlMath);
+	}
+
+	parseMathElement(elem: Element, type: DomType): OpenXmlElement {
+		const result = { type, children: [] } as OpenXmlElement;
+
+		for (const el of xml.elements(elem)) {
+			switch(el.localName) {
+				case "r":
+					result.children.push(this.parseRun(el));
+					break;
+				
+				case "f":
+					result.children.push(this.parseMathElement(el, DomType.MmlFraction));
+					break;
+
+				case "num":
+					result.children.push(this.parseMathElement(el, DomType.MmlNumerator));
+					break;
+
+				case "den":
+					result.children.push(this.parseMathElement(el, DomType.MmlDenominator));
+					break;
+			}
+		}
+
+		return result;
+	}
 
     parseRunProperties(elem: Element, run: WmlRun) {
         this.parseDefaultProperties(elem, run.cssStyle = {}, null, c => {

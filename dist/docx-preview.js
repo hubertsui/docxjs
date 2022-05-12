@@ -514,6 +514,9 @@ class DocumentParser {
                 case "bookmarkEnd":
                     result.children.push((0, bookmarks_1.parseBookmarkEnd)(c, xml_parser_1.default));
                     break;
+                case "oMath":
+                    result.children.push(this.parseMath(c));
+                    break;
                 case "pPr":
                     this.parseParagraphProperties(c, result);
                     break;
@@ -649,6 +652,29 @@ class DocumentParser {
                     break;
             }
         });
+        return result;
+    }
+    parseMath(elem) {
+        return this.parseMathElement(elem, dom_1.DomType.MmlMath);
+    }
+    parseMathElement(elem, type) {
+        const result = { type, children: [] };
+        for (const el of xml_parser_1.default.elements(elem)) {
+            switch (el.localName) {
+                case "r":
+                    result.children.push(this.parseRun(el));
+                    break;
+                case "f":
+                    result.children.push(this.parseMathElement(el, dom_1.DomType.MmlFraction));
+                    break;
+                case "num":
+                    result.children.push(this.parseMathElement(el, dom_1.DomType.MmlNumerator));
+                    break;
+                case "den":
+                    result.children.push(this.parseMathElement(el, dom_1.DomType.MmlDenominator));
+                    break;
+            }
+        }
         return result;
     }
     parseRunProperties(elem, run) {
@@ -1735,6 +1761,10 @@ var DomType;
     DomType["Instruction"] = "instruction";
     DomType["VmlPicture"] = "vmlPicture";
     DomType["VmlShape"] = "vmlShape";
+    DomType["MmlMath"] = "mmlMath";
+    DomType["MmlFraction"] = "mmlFraction";
+    DomType["MmlNumerator"] = "mmlNumerator";
+    DomType["MmlDenominator"] = "mmlDenominator";
 })(DomType = exports.DomType || (exports.DomType = {}));
 
 
@@ -2190,6 +2220,10 @@ exports.HtmlRenderer = void 0;
 const dom_1 = __webpack_require__(/*! ./document/dom */ "./src/document/dom.ts");
 const utils_1 = __webpack_require__(/*! ./utils */ "./src/utils.ts");
 const javascript_1 = __webpack_require__(/*! ./javascript */ "./src/javascript.ts");
+const ns = {
+    svg: "http://www.w3.org/2000/svg",
+    mathML: "http://www.w3.org/1998/Math/MathML"
+};
 class HtmlRenderer {
     constructor(htmlDocument) {
         this.htmlDocument = htmlDocument;
@@ -2521,6 +2555,10 @@ section.${c}>article { margin-bottom: auto; }
 .${c} p { margin: 0pt; min-height: 1em; }
 .${c} span { white-space: pre-wrap; overflow-wrap: break-word; }
 .${c} a { color: inherit; text-decoration: inherit; }
+.${c}-math { display: inline-block; vertical-align: middle; }
+.${c}-mfrac { display: inline-flex; flex-flow: column nowrap; }
+.${c}-mfrac .${c}-mrow { text-align: center; line-height: 1; }
+.${c}-mfrac .${c}-mrow:first-child { border-bottom: 1px solid currentColor; }
 `;
         return createStyleElement(styleText);
     }
@@ -2645,6 +2683,13 @@ section.${c}>article { margin-bottom: auto; }
                 return this.renderVmlPicture(elem);
             case dom_1.DomType.VmlShape:
                 return this.renderVmlShape(elem);
+            case dom_1.DomType.MmlMath:
+                return this.renderContainer(elem, "div", { className: `${this.className}-math` });
+            case dom_1.DomType.MmlFraction:
+                return this.renderContainer(elem, "div", { className: `${this.className}-mfrac` });
+            case dom_1.DomType.MmlNumerator:
+            case dom_1.DomType.MmlDenominator:
+                return this.renderContainer(elem, "div", { className: `${this.className}-mrow` });
         }
         return null;
     }
@@ -2659,8 +2704,8 @@ section.${c}>article { margin-bottom: auto; }
             appendChildren(into, result);
         return result;
     }
-    renderContainer(elem, tagName) {
-        return this.createElement(tagName, null, this.renderChildren(elem));
+    renderContainer(elem, tagName, props) {
+        return this.createElement(tagName, props, this.renderChildren(elem));
     }
     renderParagraph(elem) {
         var _a, _b, _c, _d;
@@ -2933,7 +2978,7 @@ function createElement(tagName, props, children) {
     return createElementNS(undefined, tagName, props, children);
 }
 function createSvgElement(tagName, props, children) {
-    return createElementNS("http://www.w3.org/2000/svg", tagName, props, children);
+    return createElementNS(ns.svg, tagName, props, children);
 }
 function createElementNS(ns, tagName, props, children) {
     var result = ns ? document.createElementNS(ns, tagName) : document.createElement(tagName);

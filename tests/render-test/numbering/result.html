@@ -9,6 +9,10 @@
   .docx p { margin: 0pt; min-height: 1em; }
   .docx span { white-space: pre-wrap; overflow-wrap: break-word; }
   .docx a { color: inherit; text-decoration: inherit; }
+  .docx-math { display: inline-block; vertical-align: middle; }
+  .docx-mfrac { display: inline-flex; flex-flow: column nowrap; }
+  .docx-mfrac .docx-mrow { text-align: center; line-height: 1; }
+  .docx-mfrac .docx-mrow:first-child { border-bottom: 1px solid currentColor; }
   </style><!--docxjs document styles--><style>.docx span {
     font-family: Liberation Serif;
   }
