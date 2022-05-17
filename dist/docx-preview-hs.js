@@ -170,7 +170,7 @@ exports.autos = {
     shd: "inherit",
     color: "black",
     borderColor: "black",
-    highlight: "transparent"
+    highlight: "transparent",
 };
 class DocumentParser {
     constructor(options) {
@@ -208,7 +208,7 @@ class DocumentParser {
     }
     parseBodyElements(element) {
         var children = [];
-        xmlUtil.foreach(element, elem => {
+        xmlUtil.foreach(element, (elem) => {
             switch (elem.localName) {
                 case "p":
                     children.push(this.parseParagraph(elem));
@@ -217,7 +217,7 @@ class DocumentParser {
                     children.push(this.parseTable(elem));
                     break;
                 case "sdt":
-                    this.parseSdt(elem).forEach(el => children.push(el));
+                    this.parseSdt(elem).forEach((el) => children.push(el));
                     break;
             }
         });
@@ -225,7 +225,7 @@ class DocumentParser {
     }
     parseStylesFile(xstyles) {
         var result = [];
-        xmlUtil.foreach(xstyles, n => {
+        xmlUtil.foreach(xstyles, (n) => {
             switch (n.localName) {
                 case "style":
                     result.push(this.parseStyle(n));
@@ -243,16 +243,16 @@ class DocumentParser {
             name: null,
             target: null,
             basedOn: null,
-            styles: []
+            styles: [],
         };
-        xmlUtil.foreach(node, c => {
+        xmlUtil.foreach(node, (c) => {
             switch (c.localName) {
                 case "rPrDefault":
                     var rPr = xml_parser_1.default.element(c, "rPr");
                     if (rPr)
                         result.styles.push({
                             target: "span",
-                            values: this.parseDefaultProperties(rPr, {})
+                            values: this.parseDefaultProperties(rPr, {}),
                         });
                     break;
                 case "pPrDefault":
@@ -260,7 +260,7 @@ class DocumentParser {
                     if (pPr)
                         result.styles.push({
                             target: "p",
-                            values: this.parseDefaultProperties(pPr, {})
+                            values: this.parseDefaultProperties(pPr, {}),
                         });
                     break;
             }
@@ -275,7 +275,7 @@ class DocumentParser {
             target: null,
             basedOn: null,
             styles: [],
-            linked: null
+            linked: null,
         };
         switch (xml_parser_1.default.attr(node, "type")) {
             case "paragraph":
@@ -288,7 +288,7 @@ class DocumentParser {
                 result.target = "span";
                 break;
         }
-        xmlUtil.foreach(node, n => {
+        xmlUtil.foreach(node, (n) => {
             switch (n.localName) {
                 case "basedOn":
                     result.basedOn = xml_parser_1.default.attr(n, "val");
@@ -308,14 +308,14 @@ class DocumentParser {
                 case "pPr":
                     result.styles.push({
                         target: "p",
-                        values: this.parseDefaultProperties(n, {})
+                        values: this.parseDefaultProperties(n, {}),
                     });
                     result.paragraphProps = (0, paragraph_1.parseParagraphProperties)(n, xml_parser_1.default);
                     break;
                 case "rPr":
                     result.styles.push({
                         target: "span",
-                        values: this.parseDefaultProperties(n, {})
+                        values: this.parseDefaultProperties(n, {}),
                     });
                     result.runProps = (0, run_1.parseRunProperties)(n, xml_parser_1.default);
                     break;
@@ -323,7 +323,7 @@ class DocumentParser {
                 case "tcPr":
                     result.styles.push({
                         target: "td",
-                        values: this.parseDefaultProperties(n, {})
+                        values: this.parseDefaultProperties(n, {}),
                     });
                     break;
                 case "tblStylePr":
@@ -339,7 +339,8 @@ class DocumentParser {
                 case "uiPriority":
                     break;
                 default:
-                    this.options.debug && console.warn(`DOCX: Unknown style element: ${n.localName}`);
+                    this.options.debug &&
+                        console.warn(`DOCX: Unknown style element: ${n.localName}`);
             }
         });
         return result;
@@ -382,22 +383,23 @@ class DocumentParser {
                 modificator = ":not(.no-hband)";
                 selector = "tr.even-row";
                 break;
-            default: return [];
+            default:
+                return [];
         }
-        xmlUtil.foreach(node, n => {
+        xmlUtil.foreach(node, (n) => {
             switch (n.localName) {
                 case "pPr":
                     result.push({
                         target: `${selector} p`,
                         mod: modificator,
-                        values: this.parseDefaultProperties(n, {})
+                        values: this.parseDefaultProperties(n, {}),
                     });
                     break;
                 case "rPr":
                     result.push({
                         target: `${selector} span`,
                         mod: modificator,
-                        values: this.parseDefaultProperties(n, {})
+                        values: this.parseDefaultProperties(n, {}),
                     });
                     break;
                 case "tblPr":
@@ -405,7 +407,7 @@ class DocumentParser {
                     result.push({
                         target: selector,
                         mod: modificator,
-                        values: this.parseDefaultProperties(n, {})
+                        values: this.parseDefaultProperties(n, {}),
                     });
                     break;
             }
@@ -416,11 +418,10 @@ class DocumentParser {
         var result = [];
         var mapping = {};
         var bullets = [];
-        xmlUtil.foreach(xnums, n => {
+        xmlUtil.foreach(xnums, (n) => {
             switch (n.localName) {
                 case "abstractNum":
-                    this.parseAbstractNumbering(n, bullets)
-                        .forEach(x => result.push(x));
+                    this.parseAbstractNumbering(n, bullets).forEach((x) => result.push(x));
                     break;
                 case "numPicBullet":
                     bullets.push(this.parseNumberingPicBullet(n));
@@ -432,23 +433,25 @@ class DocumentParser {
                     break;
             }
         });
-        result.forEach(x => x.id = mapping[x.id]);
+        result.forEach((x) => (x.id = mapping[x.id]));
         return result;
     }
     parseNumberingPicBullet(elem) {
         var pict = xml_parser_1.default.element(elem, "pict");
         var shape = pict && xml_parser_1.default.element(pict, "shape");
         var imagedata = shape && xml_parser_1.default.element(shape, "imagedata");
-        return imagedata ? {
-            id: xml_parser_1.default.intAttr(elem, "numPicBulletId"),
-            src: xml_parser_1.default.attr(imagedata, "id"),
-            style: xml_parser_1.default.attr(shape, "style")
-        } : null;
+        return imagedata
+            ? {
+                id: xml_parser_1.default.intAttr(elem, "numPicBulletId"),
+                src: xml_parser_1.default.attr(imagedata, "id"),
+                style: xml_parser_1.default.attr(shape, "style"),
+            }
+            : null;
     }
     parseAbstractNumbering(node, bullets) {
         var result = [];
         var id = xml_parser_1.default.attr(node, "abstractNumId");
-        xmlUtil.foreach(node, n => {
+        xmlUtil.foreach(node, (n) => {
             switch (n.localName) {
                 case "lvl":
                     result.push(this.parseNumberingLevel(id, n, bullets));
@@ -464,9 +467,9 @@ class DocumentParser {
             pStyleName: undefined,
             pStyle: {},
             rStyle: {},
-            suff: "tab"
+            suff: "tab",
         };
-        xmlUtil.foreach(node, n => {
+        xmlUtil.foreach(node, (n) => {
             switch (n.localName) {
                 case "pPr":
                     this.parseDefaultProperties(n, result.pStyle);
@@ -476,7 +479,7 @@ class DocumentParser {
                     break;
                 case "lvlPicBulletId":
                     var id = xml_parser_1.default.intAttr(n, "val");
-                    result.bullet = bullets.find(x => x.id == id);
+                    result.bullet = bullets.find((x) => x.id == id);
                     break;
                 case "lvlText":
                     result.levelText = xml_parser_1.default.attr(n, "val");
@@ -500,7 +503,7 @@ class DocumentParser {
     }
     parseParagraph(node) {
         var result = { type: dom_1.DomType.Paragraph, children: [] };
-        xmlUtil.foreach(node, c => {
+        xmlUtil.foreach(node, (c) => {
             switch (c.localName) {
                 case "r":
                     result.children.push(this.parseRun(c, result));
@@ -525,7 +528,7 @@ class DocumentParser {
         return result;
     }
     parseParagraphProperties(elem, paragraph) {
-        this.parseDefaultProperties(elem, paragraph.cssStyle = {}, null, c => {
+        this.parseDefaultProperties(elem, (paragraph.cssStyle = {}), null, (c) => {
             if ((0, paragraph_1.parseParagraphProperty)(c, paragraph, xml_parser_1.default))
                 return true;
             switch (c.localName) {
@@ -552,14 +555,18 @@ class DocumentParser {
             paragraph.cssStyle["float"] = "left";
     }
     parseHyperlink(node, parent) {
-        var result = { type: dom_1.DomType.Hyperlink, parent: parent, children: [] };
+        var result = {
+            type: dom_1.DomType.Hyperlink,
+            parent: parent,
+            children: [],
+        };
         var anchor = xml_parser_1.default.attr(node, "anchor");
         var relId = xml_parser_1.default.attr(node, "id");
         if (anchor)
             result.href = "#" + anchor;
         if (relId)
             result.id = relId;
-        xmlUtil.foreach(node, c => {
+        xmlUtil.foreach(node, (c) => {
             switch (c.localName) {
                 case "r":
                     result.children.push(this.parseRun(c, result));
@@ -569,13 +576,17 @@ class DocumentParser {
         return result;
     }
     parseRun(node, parent) {
-        var result = { type: dom_1.DomType.Run, parent: parent, children: [] };
-        xmlUtil.foreach(node, c => {
+        var result = {
+            type: dom_1.DomType.Run,
+            parent: parent,
+            children: [],
+        };
+        xmlUtil.foreach(node, (c) => {
             switch (c.localName) {
                 case "t":
                     result.children.push({
                         type: dom_1.DomType.Text,
-                        text: c.textContent
+                        text: c.textContent,
                     });
                     break;
                 case "fldSimple":
@@ -583,14 +594,14 @@ class DocumentParser {
                         type: dom_1.DomType.SimpleField,
                         instruction: xml_parser_1.default.attr(c, "instr"),
                         lock: xml_parser_1.default.boolAttr(c, "lock", false),
-                        dirty: xml_parser_1.default.boolAttr(c, "dirty", false)
+                        dirty: xml_parser_1.default.boolAttr(c, "dirty", false),
                     });
                     break;
                 case "instrText":
                     result.fieldRun = true;
                     result.children.push({
                         type: dom_1.DomType.Instruction,
-                        text: c.textContent
+                        text: c.textContent,
                     });
                     break;
                 case "fldChar":
@@ -599,7 +610,7 @@ class DocumentParser {
                         type: dom_1.DomType.ComplexField,
                         charType: xml_parser_1.default.attr(c, "fldCharType"),
                         lock: xml_parser_1.default.boolAttr(c, "lock", false),
-                        dirty: xml_parser_1.default.boolAttr(c, "dirty", false)
+                        dirty: xml_parser_1.default.boolAttr(c, "dirty", false),
                     });
                     break;
                 case "noBreakHyphen":
@@ -608,20 +619,20 @@ class DocumentParser {
                 case "br":
                     result.children.push({
                         type: dom_1.DomType.Break,
-                        break: xml_parser_1.default.attr(c, "type") || "textWrapping"
+                        break: xml_parser_1.default.attr(c, "type") || "textWrapping",
                     });
                     break;
                 case "lastRenderedPageBreak":
                     result.children.push({
                         type: dom_1.DomType.Break,
-                        break: "lastRenderedPageBreak"
+                        break: "lastRenderedPageBreak",
                     });
                     break;
                 case "sym":
                     result.children.push({
                         type: dom_1.DomType.Symbol,
                         font: xml_parser_1.default.attr(c, "font"),
-                        char: xml_parser_1.default.attr(c, "char")
+                        char: xml_parser_1.default.attr(c, "char"),
                     });
                     break;
                 case "tab":
@@ -630,13 +641,13 @@ class DocumentParser {
                 case "footnoteReference":
                     result.children.push({
                         type: dom_1.DomType.FootnoteReference,
-                        id: xml_parser_1.default.attr(c, "id")
+                        id: xml_parser_1.default.attr(c, "id"),
                     });
                     break;
                 case "endnoteReference":
                     result.children.push({
                         type: dom_1.DomType.EndnoteReference,
-                        id: xml_parser_1.default.attr(c, "id")
+                        id: xml_parser_1.default.attr(c, "id"),
                     });
                     break;
                 case "drawing":
@@ -678,7 +689,8 @@ class DocumentParser {
         return result;
     }
     parseRunProperties(elem, run) {
-        this.parseDefaultProperties(elem, run.cssStyle = {}, null, c => {
+        console.log("parse run properties", elem, run);
+        this.parseDefaultProperties(elem, (run.cssStyle = {}), null, (c) => {
             switch (c.localName) {
                 case "rStyle":
                     run.styleName = xml_parser_1.default.attr(c, "val");
@@ -729,7 +741,11 @@ class DocumentParser {
     }
     parseDrawingWrapper(node) {
         var _a;
-        var result = { type: dom_1.DomType.Drawing, children: [], cssStyle: {} };
+        var result = {
+            type: dom_1.DomType.Drawing,
+            children: [],
+            cssStyle: {},
+        };
         var isAnchor = node.localName == "anchor";
         let wrapType = null;
         let simplePos = xml_parser_1.default.boolAttr(node, "simplePos");
@@ -753,7 +769,8 @@ class DocumentParser {
                         let pos = n.localName == "positionH" ? posX : posY;
                         var alignNode = xml_parser_1.default.element(n, "align");
                         var offsetNode = xml_parser_1.default.element(n, "posOffset");
-                        pos.relative = (_a = xml_parser_1.default.attr(n, "relativeFrom")) !== null && _a !== void 0 ? _a : pos.relative;
+                        pos.relative =
+                            (_a = xml_parser_1.default.attr(n, "relativeFrom")) !== null && _a !== void 0 ? _a : pos.relative;
                         if (alignNode)
                             pos.align = alignNode.textContent;
                         if (offsetNode)
@@ -774,15 +791,15 @@ class DocumentParser {
             }
         }
         if (wrapType == "wrapTopAndBottom") {
-            result.cssStyle['display'] = 'block';
+            result.cssStyle["display"] = "block";
             if (posX.align) {
-                result.cssStyle['text-align'] = posX.align;
-                result.cssStyle['width'] = "100%";
+                result.cssStyle["text-align"] = posX.align;
+                result.cssStyle["width"] = "100%";
             }
         }
         else if (wrapType == "wrapNone") {
-            result.cssStyle['display'] = 'block';
-            result.cssStyle['position'] = 'relative';
+            result.cssStyle["display"] = "block";
+            result.cssStyle["position"] = "relative";
             result.cssStyle["width"] = "0px";
             result.cssStyle["height"] = "0px";
             if (posX.offset)
@@ -790,7 +807,8 @@ class DocumentParser {
             if (posY.offset)
                 result.cssStyle["top"] = posY.offset;
         }
-        else if (isAnchor && (posX.align == 'left' || posX.align == 'right')) {
+        else if (isAnchor &&
+            (posX.align == "left" || posX.align == "right")) {
             result.cssStyle["float"] = posX.align;
         }
         return result;
@@ -829,7 +847,7 @@ class DocumentParser {
     }
     parseTable(node) {
         var result = { type: dom_1.DomType.Table, children: [] };
-        xmlUtil.foreach(node, c => {
+        xmlUtil.foreach(node, (c) => {
             switch (c.localName) {
                 case "tr":
                     result.children.push(this.parseTableRow(c));
@@ -846,7 +864,7 @@ class DocumentParser {
     }
     parseTableColumns(node) {
         var result = [];
-        xmlUtil.foreach(node, n => {
+        xmlUtil.foreach(node, (n) => {
             switch (n.localName) {
                 case "gridCol":
                     result.push({ width: xml_parser_1.default.lengthAttr(n, "w") });
@@ -858,7 +876,7 @@ class DocumentParser {
     parseTableProperties(elem, table) {
         table.cssStyle = {};
         table.cellStyle = {};
-        this.parseDefaultProperties(elem, table.cssStyle, table.cellStyle, c => {
+        this.parseDefaultProperties(elem, table.cssStyle, table.cellStyle, (c) => {
             switch (c.localName) {
                 case "tblStyle":
                     table.styleName = xml_parser_1.default.attr(c, "val");
@@ -897,7 +915,7 @@ class DocumentParser {
         var bottomFromText = xml_parser_1.default.lengthAttr(node, "bottomFromText");
         var rightFromText = xml_parser_1.default.lengthAttr(node, "rightFromText");
         var leftFromText = xml_parser_1.default.lengthAttr(node, "leftFromText");
-        table.cssStyle["float"] = 'left';
+        table.cssStyle["float"] = "left";
         table.cssStyle["margin-bottom"] = values.addSize(table.cssStyle["margin-bottom"], bottomFromText);
         table.cssStyle["margin-left"] = values.addSize(table.cssStyle["margin-left"], leftFromText);
         table.cssStyle["margin-right"] = values.addSize(table.cssStyle["margin-right"], rightFromText);
@@ -905,7 +923,7 @@ class DocumentParser {
     }
     parseTableRow(node) {
         var result = { type: dom_1.DomType.Row, children: [] };
-        xmlUtil.foreach(node, c => {
+        xmlUtil.foreach(node, (c) => {
             switch (c.localName) {
                 case "tc":
                     result.children.push(this.parseTableCell(c));
@@ -918,7 +936,7 @@ class DocumentParser {
         return result;
     }
     parseTableRowProperties(elem, row) {
-        row.cssStyle = this.parseDefaultProperties(elem, {}, null, c => {
+        row.cssStyle = this.parseDefaultProperties(elem, {}, null, (c) => {
             switch (c.localName) {
                 case "cnfStyle":
                     row.className = values.classNameOfCnfStyle(c);
@@ -934,7 +952,7 @@ class DocumentParser {
     }
     parseTableCell(node) {
         var result = { type: dom_1.DomType.Cell, children: [] };
-        xmlUtil.foreach(node, c => {
+        xmlUtil.foreach(node, (c) => {
             switch (c.localName) {
                 case "tbl":
                     result.children.push(this.parseTable(c));
@@ -950,7 +968,7 @@ class DocumentParser {
         return result;
     }
     parseTableCellProperties(elem, cell) {
-        cell.cssStyle = this.parseDefaultProperties(elem, {}, null, c => {
+        cell.cssStyle = this.parseDefaultProperties(elem, {}, null, (c) => {
             var _a;
             switch (c.localName) {
                 case "gridSpan":
@@ -970,7 +988,9 @@ class DocumentParser {
     }
     parseDefaultProperties(elem, style = null, childStyle = null, handler = null) {
         style = style || {};
-        xmlUtil.foreach(elem, c => {
+        let letterSpacing = 0;
+        let scale = 1;
+        xmlUtil.foreach(elem, (c) => {
             if (handler === null || handler === void 0 ? void 0 : handler(c))
                 return;
             switch (c.localName) {
@@ -1007,19 +1027,29 @@ class DocumentParser {
                     this.parseTrHeight(c, style);
                     break;
                 case "strike":
-                    style["text-decoration"] = xml_parser_1.default.boolAttr(c, "val", true) ? "line-through" : "none";
+                    style["text-decoration"] = xml_parser_1.default.boolAttr(c, "val", true)
+                        ? "line-through"
+                        : "none";
                     break;
                 case "b":
-                    style["font-weight"] = xml_parser_1.default.boolAttr(c, "val", true) ? "bold" : "normal";
+                    style["font-weight"] = xml_parser_1.default.boolAttr(c, "val", true)
+                        ? "bold"
+                        : "normal";
                     break;
                 case "i":
-                    style["font-style"] = xml_parser_1.default.boolAttr(c, "val", true) ? "italic" : "normal";
+                    style["font-style"] = xml_parser_1.default.boolAttr(c, "val", true)
+                        ? "italic"
+                        : "normal";
                     break;
                 case "caps":
-                    style["text-transform"] = xml_parser_1.default.boolAttr(c, "val", true) ? "uppercase" : "none";
+                    style["text-transform"] = xml_parser_1.default.boolAttr(c, "val", true)
+                        ? "uppercase"
+                        : "none";
                     break;
                 case "smallCaps":
-                    style["text-transform"] = xml_parser_1.default.boolAttr(c, "val", true) ? "lowercase" : "none";
+                    style["text-transform"] = xml_parser_1.default.boolAttr(c, "val", true)
+                        ? "lowercase"
+                        : "none";
                     break;
                 case "u":
                     this.parseUnderline(c, style);
@@ -1068,10 +1098,20 @@ class DocumentParser {
                 case "spacing":
                     if (elem.localName == "pPr")
                         this.parseSpacing(c, style);
+                    else if (elem.localName == "rPr") {
+                        letterSpacing = xml_parser_1.default.floatAttr(c, "val");
+                    }
                     break;
                 case "wordWrap":
                     if (xml_parser_1.default.boolAttr(c, "val"))
                         style["overflow-wrap"] = "break-word";
+                    break;
+                case "w":
+                    scale = xml_parser_1.default.floatAttr(c, "val");
+                    style["transform"] = `scaleX(${Math.round(scale * 100) / 10000})`;
+                    style["display"] = "inline-block";
+                    style["transform-origin"] = "center left";
+                    style["width"] = `${Math.ceil(10000 / scale)}%`;
                     break;
                 case "bCs":
                 case "iCs":
@@ -1098,6 +1138,10 @@ class DocumentParser {
                     break;
             }
         });
+        if (letterSpacing !== 0) {
+            console.log(letterSpacing, scale);
+            style["letter-spacing"] = `${Math.ceil((letterSpacing * 100) / scale) / 10}pt`;
+        }
         return style;
     }
     parseUnderline(node, style) {
@@ -1145,7 +1189,7 @@ class DocumentParser {
     parseFont(node, style) {
         var ascii = xml_parser_1.default.attr(node, "ascii");
         var asciiTheme = values.themeValue(node, "asciiTheme");
-        var fonts = [ascii, asciiTheme].filter(x => x).join(', ');
+        var fonts = [ascii, asciiTheme].filter((x) => x).join(", ");
         if (fonts.length > 0)
             style["font-family"] = fonts;
     }
@@ -1189,7 +1233,7 @@ class DocumentParser {
         }
     }
     parseMarginProperties(node, output) {
-        xmlUtil.foreach(node, c => {
+        xmlUtil.foreach(node, (c) => {
             switch (c.localName) {
                 case "left":
                     output["padding-left"] = values.valueOfMargin(c);
@@ -1218,7 +1262,7 @@ class DocumentParser {
         }
     }
     parseBorderProperties(node, output) {
-        xmlUtil.foreach(node, c => {
+        xmlUtil.foreach(node, (c) => {
             switch (c.localName) {
                 case "start":
                 case "left":
@@ -1239,7 +1283,25 @@ class DocumentParser {
     }
 }
 exports.DocumentParser = DocumentParser;
-const knownColors = ['black', 'blue', 'cyan', 'darkBlue', 'darkCyan', 'darkGray', 'darkGreen', 'darkMagenta', 'darkRed', 'darkYellow', 'green', 'lightGray', 'magenta', 'none', 'red', 'white', 'yellow'];
+const knownColors = [
+    "black",
+    "blue",
+    "cyan",
+    "darkBlue",
+    "darkCyan",
+    "darkGray",
+    "darkGreen",
+    "darkMagenta",
+    "darkRed",
+    "darkYellow",
+    "green",
+    "lightGray",
+    "magenta",
+    "none",
+    "red",
+    "white",
+    "yellow",
+];
 class xmlUtil {
     static foreach(node, cb) {
         for (var i = 0; i < node.childNodes.length; i++) {
@@ -1248,7 +1310,7 @@ class xmlUtil {
                 cb(n);
         }
     }
-    static colorAttr(node, attrName, defValue = null, autoColor = 'black') {
+    static colorAttr(node, attrName, defValue = null, autoColor = "black") {
         var v = xml_parser_1.default.attr(node, attrName);
         if (v) {
             if (v == "auto") {
@@ -1274,11 +1336,13 @@ class values {
     static valueOfSize(c, attr) {
         var type = common_1.LengthUsage.Dxa;
         switch (xml_parser_1.default.attr(c, "type")) {
-            case "dxa": break;
+            case "dxa":
+                break;
             case "pct":
                 type = common_1.LengthUsage.Percent;
                 break;
-            case "auto": return "auto";
+            case "auto":
+                return "auto";
         }
         return xml_parser_1.default.lengthAttr(c, attr, type);
     }
@@ -1300,29 +1364,44 @@ class values {
     static classNameOfCnfStyle(c) {
         const val = xml_parser_1.default.attr(c, "val");
         const classes = [
-            'first-row', 'last-row', 'first-col', 'last-col',
-            'odd-col', 'even-col', 'odd-row', 'even-row',
-            'ne-cell', 'nw-cell', 'se-cell', 'sw-cell'
+            "first-row",
+            "last-row",
+            "first-col",
+            "last-col",
+            "odd-col",
+            "even-col",
+            "odd-row",
+            "even-row",
+            "ne-cell",
+            "nw-cell",
+            "se-cell",
+            "sw-cell",
         ];
-        return classes.filter((_, i) => val[i] == '1').join(' ');
+        return classes.filter((_, i) => val[i] == "1").join(" ");
     }
     static valueOfJc(c) {
         var type = xml_parser_1.default.attr(c, "val");
         switch (type) {
             case "start":
-            case "left": return "left";
-            case "center": return "center";
+            case "left":
+                return "left";
+            case "center":
+                return "center";
             case "end":
-            case "right": return "right";
-            case "both": return "justify";
+            case "right":
+                return "right";
+            case "both":
+                return "justify";
         }
         return type;
     }
     static valueOfVertAlign(c, asTagName = false) {
         var type = xml_parser_1.default.attr(c, "val");
         switch (type) {
-            case "subscript": return "sub";
-            case "superscript": return asTagName ? "sup" : "super";
+            case "subscript":
+                return "sub";
+            case "superscript":
+                return asTagName ? "sup" : "super";
         }
         return asTagName ? null : type;
     }
@@ -1330,10 +1409,14 @@ class values {
         var type = xml_parser_1.default.attr(c, "val");
         switch (type) {
             case "auto":
-            case "baseline": return "baseline";
-            case "top": return "top";
-            case "center": return "middle";
-            case "bottom": return "bottom";
+            case "baseline":
+                return "baseline";
+            case "top":
+                return "top";
+            case "center":
+                return "middle";
+            case "bottom":
+                return "bottom";
         }
         return type;
     }
@@ -1347,17 +1430,17 @@ class values {
     static classNameOftblLook(c) {
         const val = xml_parser_1.default.hexAttr(c, "val", 0);
         let className = "";
-        if (xml_parser_1.default.boolAttr(c, "firstRow") || (val & 0x0020))
+        if (xml_parser_1.default.boolAttr(c, "firstRow") || val & 0x0020)
             className += " first-row";
-        if (xml_parser_1.default.boolAttr(c, "lastRow") || (val & 0x0040))
+        if (xml_parser_1.default.boolAttr(c, "lastRow") || val & 0x0040)
             className += " last-row";
-        if (xml_parser_1.default.boolAttr(c, "firstColumn") || (val & 0x0080))
+        if (xml_parser_1.default.boolAttr(c, "firstColumn") || val & 0x0080)
             className += " first-col";
-        if (xml_parser_1.default.boolAttr(c, "lastColumn") || (val & 0x0100))
+        if (xml_parser_1.default.boolAttr(c, "lastColumn") || val & 0x0100)
             className += " last-col";
-        if (xml_parser_1.default.boolAttr(c, "noHBand") || (val & 0x0200))
+        if (xml_parser_1.default.boolAttr(c, "noHBand") || val & 0x0200)
             className += " no-hband";
-        if (xml_parser_1.default.boolAttr(c, "noVBand") || (val & 0x0400))
+        if (xml_parser_1.default.boolAttr(c, "noVBand") || val & 0x0400)
             className += " no-vband";
         return className.trim();
     }
@@ -3742,9 +3825,11 @@ class WordDocument {
         d._parser = parser;
         return open_xml_package_1.OpenXmlPackage.load(blob, options)
             .then(pkg => {
+            console.log("pkg", pkg);
             d._package = pkg;
             return d._package.loadRelationships();
         }).then(rels => {
+            console.log("rels", rels);
             d.rels = rels;
             const tasks = topLevelRels.map(rel => {
                 var _a;
@@ -3804,6 +3889,7 @@ class WordDocument {
                 this.settingsPart = part = new settings_part_1.SettingsPart(this._package, path);
                 break;
         }
+        console.log("part", part);
         if (part == null)
             return Promise.resolve(null);
         this.partsMap[path] = part;
@@ -3917,4 +4003,4 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_jszip__;
 /******/ })()
 ;
 });
-//# sourceMappingURL=docx-preview.js.map
+//# sourceMappingURL=docx-preview-hs.js.map

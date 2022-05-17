@@ -11,7 +11,7 @@ function buildConfig(prod) {
   return {
     mode: 'development',
     entry: {
-      'docx-preview': PATHS.src + '/docx-preview.ts'
+      'docx-preview-hs': PATHS.src + '/docx-preview.ts'
     },
     output: {
       path: PATHS.build,

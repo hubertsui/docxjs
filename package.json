@@ -1,5 +1,5 @@
 {
-  "name": "docx-preview",
+  "name": "docx-preview-hs",
   "version": "0.1.10",
   "license": "Apache-2.0",
   "keywords": [
@@ -7,11 +7,11 @@
     "docx"
   ],
   "author": {
-    "name": "Volodymyr Baydalka"
+    "name": "Hubert Sui"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zVolodymyr/docxjs.git"
+    "url": "git+https://github.com/hubertsui/docxjs.git"
   },
   "dependencies": {
     "jszip": ">=3.0.0"
@@ -40,6 +40,6 @@
   "files": [
     "dist"
   ],
-  "main": "dist/docx-preview.min.js",
-  "types": "dist/docx-preview.d.ts"
+  "main": "dist/docx-preview-hs.min.js",
+  "types": "dist/docx-preview-hs.d.ts"
 }
