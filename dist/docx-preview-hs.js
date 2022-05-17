@@ -3825,11 +3825,9 @@ class WordDocument {
         d._parser = parser;
         return open_xml_package_1.OpenXmlPackage.load(blob, options)
             .then(pkg => {
-            console.log("pkg", pkg);
             d._package = pkg;
             return d._package.loadRelationships();
         }).then(rels => {
-            console.log("rels", rels);
             d.rels = rels;
             const tasks = topLevelRels.map(rel => {
                 var _a;
@@ -3889,7 +3887,6 @@ class WordDocument {
                 this.settingsPart = part = new settings_part_1.SettingsPart(this._package, path);
                 break;
         }
-        console.log("part", part);
         if (part == null)
             return Promise.resolve(null);
         this.partsMap[path] = part;
